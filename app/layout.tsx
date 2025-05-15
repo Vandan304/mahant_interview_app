@@ -22,9 +22,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="dark">
-      <body
-        className={`${monaSans.className} antialiased pattern`}
-      >
+      <body>
+       <div  className={`${monaSans.className} antialiased pattern`}>
+        
+       </div>
+
         {children}
         <Toaster />
       </body>
