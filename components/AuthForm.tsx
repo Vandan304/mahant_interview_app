@@ -3,18 +3,31 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
+import {
+  Form,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormControl,
+  FormMessage,
+} from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { auth } from "@/firebase/client";
+import { signUp } from "@/lib/actions/auth.action";
 
 type FormType = "sign-in" | "sign-up";
 
 const authFormSchema = (type: FormType) => {
   return z.object({
-    name: type === "sign-up" ? z.string().min(3, "Name must be at least 3 characters") : z.string().optional(),
+    name:
+      type === "sign-up"
+        ? z.string().min(3, "Name must be at least 3 characters")
+        : z.string().optional(),
     email: z.string().email("Enter a valid email"),
     password: z.string().min(3, "Password must be at least 3 characters"),
   });
@@ -22,7 +35,7 @@ const authFormSchema = (type: FormType) => {
 
 const AuthForm = ({ type }: { type: FormType }) => {
   const formSchema = authFormSchema(type);
-const router = useRouter()
+  const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -34,14 +47,30 @@ const router = useRouter()
 
   const isSignIn = type === "sign-in";
 
-  function onSubmit(values: z.infer<typeof formSchema>) {
+  async function onSubmit(values: z.infer<typeof formSchema>) {
     try {
-      if (!isSignIn) {
-        toast.success('Account created successfully please sign in')
-        router.push('/sign-in')
+      if (type === "sign-up") {
+        const { name, email, password } = values;
+        const userCredentials = await createUserWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const result = await signUp({
+          uid: userCredentials.user.uid,
+          name: name!,
+          email,
+          password,
+        });
+        if (!result?.success) {
+          toast.error(result?.message);
+          return;
+        }
+        toast.success("Account created successfully please sign in");
+        router.push("/sign-in");
       } else {
-        toast.success('sign in successfully')
-        router.push('/')
+        toast.success("sign in successfully");
+        router.push("/");
       }
     } catch (error) {
       console.error(error);
@@ -59,8 +88,10 @@ const router = useRouter()
         <h3 className="text-center">Practice Job Interviews With AI</h3>
 
         <Form {...form}>
-          <form onSubmit={form.handleSubmit(onSubmit)} className="w-full space-y-6 mt-4 form">
-
+          <form
+            onSubmit={form.handleSubmit(onSubmit)}
+            className="w-full space-y-6 mt-4 form"
+          >
             {!isSignIn && (
               <FormField
                 control={form.control}
@@ -98,7 +129,11 @@ const router = useRouter()
                 <FormItem>
                   <FormLabel>Password</FormLabel>
                   <FormControl>
-                    <Input type="password" placeholder="Your password" {...field} />
+                    <Input
+                      type="password"
+                      placeholder="Your password"
+                      {...field}
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
