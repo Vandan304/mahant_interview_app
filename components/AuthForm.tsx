@@ -21,7 +21,7 @@ import {
   signInWithEmailAndPassword,
 } from "firebase/auth";
 import { auth } from "@/firebase/client";
-import { signUp } from "@/lib/actions/auth.action";
+import { signIn, signUp } from "@/lib/actions/auth.action";
 
 type FormType = "sign-in" | "sign-up";
 
@@ -78,7 +78,14 @@ const AuthForm = ({ type }: { type: FormType }) => {
           email,
           password
         );
-        const idToken = await userCredentials.user.getIdToken()
+        const idToken = await userCredentials.user.getIdToken();
+        if (!idToken) {
+          toast.error("Sign in failed");
+          return;
+        }
+        await signIn({
+          idToken,email
+        })
         toast.success("sign in successfully");
         router.push("/");
       }
