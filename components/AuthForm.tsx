@@ -16,7 +16,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword } from "firebase/auth";
+import {
+  createUserWithEmailAndPassword,
+  signInWithEmailAndPassword,
+} from "firebase/auth";
 import { auth } from "@/firebase/client";
 import { signUp } from "@/lib/actions/auth.action";
 
@@ -69,6 +72,13 @@ const AuthForm = ({ type }: { type: FormType }) => {
         toast.success("Account created successfully please sign in");
         router.push("/sign-in");
       } else {
+        const { email, password } = values;
+        const userCredentials = await signInWithEmailAndPassword(
+          auth,
+          email,
+          password
+        );
+        const idToken = await userCredentials.user.getIdToken()
         toast.success("sign in successfully");
         router.push("/");
       }
