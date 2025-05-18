@@ -18,7 +18,7 @@ interface SaveMessage {
   content: string;
 }
 
-const Agent = ({ userName, userId, type }: AgentProps) => {
+const Agent = ({ userName, userId, type ,interviewId,questions}: AgentProps) => {
   const router = useRouter();
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [callStatus, setCallStatus] = useState<CallStatus>(CallStatus.INACTIVE);
@@ -64,7 +64,7 @@ const Agent = ({ userName, userId, type }: AgentProps) => {
         username: userName,
         userid: userId,
       },
-      clientMessages: [], // 👈 Required but can be empty
+      clientMessages: [], 
       serverMessages: [],
     });
   };
