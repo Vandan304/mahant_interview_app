@@ -1,4 +1,4 @@
-"use client";
+"use client"
 import { cn } from "@/lib/utils";
 import { vapi } from "@/lib/vapi.sdk";
 import { Message } from "ai";
@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState } from "react";
 import { interviewer } from "@/constants";
+import { createFeedback } from "@/lib/actions/general.action";
 enum CallStatus {
   INACTIVE = "INACTIVE",
   CONNECTING = "CONNECTING",
@@ -86,10 +87,11 @@ const Agent = ({
   };
   const handleGenrateFeedback = async (messages: SaveMessage[]) => {
     console.log("Generate feedback here");
-    const { success, id } = {
-      success: true,
-      id: "feedback-id",
-    };
+    const { success, feedbackId:id } = await createFeedback({
+      interviewId:interviewId!,
+      userId:userId!,
+      transcript:messages
+    })
     if (success && id) {
       router.push(`/interview/${interviewId}/feedback`);
     } else {
